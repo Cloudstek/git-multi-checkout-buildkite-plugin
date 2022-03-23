@@ -1,0 +1,18 @@
+name: Git Multi Checkout
+description: Buildkite plugin to checkout multiple repositories
+author: https://github.com/Cloudstek
+requirements: [ ]
+configuration:
+  properties:
+    repositories:
+      type: array
+      items:
+        type: string
+        minItems: 1
+    pull_flags:
+      type: string
+    clone_flags:
+      type: string
+  required:
+    - repositories
+  additionalProperties: false

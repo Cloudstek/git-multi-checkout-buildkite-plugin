@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+cd "${BUILDKITE_BUILD_CHECKOUT_PATH}" || exit 1
+
+PLUGIN_PREFIX="BUILDKITE_PLUGIN_GIT_MULTI_CHECKOUT"
+
+plugin_env() {
+  local name="${PLUGIN_PREFIX}_${1}"
+
+  echo "${!name}"
+}
+
+checkout() {
+  if [ -z "$1" ]; then
+    exit 1
+  fi
+
+  DIR_NAME=$(basename "$1" .git)
+
+  if [ ! -d "$DIR_NAME" ]; then
+    git clone $CLONE_FLAGS "$1" "$DIR_NAME"
+  else
+    cd "$DIR_NAME"
+    git pull --force $PULL_FLAGS
+    cd ..
+  fi
+}
+
+echo ""
+echo "--- :git: Checkout repositories"
+
+CLONE_FLAGS="$(plugin_env "CLONE_FLAGS")"
+PULL_FLAGS="$(plugin_env "PULL_FLAGS")"
+
+index=0
+while true; do
+  if [ -z "$(plugin_env "REPOSITORIES_${index}")" ]; then
+    break
+  fi
+  checkout "$(plugin_env "REPOSITORIES_${index}")"
+  index=$((index + 1))
+done
